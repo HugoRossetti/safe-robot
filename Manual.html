@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modo Manual - Controle do Robô</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="manual-mode-container">
+        <!-- Status de Wi-Fi e Bateria -->
+        <div class="status-bar">
+            <div class="status-item" id="battery-status">
+                <i id="battery-icon" class="fa fa-battery-full"></i>
+                <span id="battery-level">100%</span>
+            </div>
+            <div class="status-item" id="wifi-status">
+                <i id="wifi-icon" class="fa fa-wifi"></i>
+                <span id="wifi-level">100%</span>
+            </div>
+        </div>
+
+        <!-- Título do Modo -->
+        <h1 class="mode-title">Modo Manual</h1>
+
+        <!-- Gráfico de Velocidade -->
+        <div class="speed-chart-container">
+            <canvas id="speedChart"></canvas>
+        </div>
+
+        <!-- Joystick Central -->
+        <div class="joystick-container">
+            <canvas id="joystick" width="200" height="200"></canvas>
+        </div>
+
+        <!-- Controle de Velocidade -->
+        <div class="speed-control">
+            <label for="speed-range">Velocidade: <span id="speed-percentage">50%</span></label>
+            <input type="range" id="speed-range" min="0" max="100" value="50" oninput="updateSpeedPercentage(this.value)">
+        </div>
+
+        <!-- Popup de Detecção de Cyberataque -->
+        <div id="cyberattack-popup" class="popup">
+            <p>Ataque cibernético detectado! O robô entrou no modo autônomo.</p>
+        </div>
+    </div>
+
+    <script src="joystick.js"></script>
+    <script src="status.js"></script>
+    <script src="speed-chart.js"></script>
+</body>
+</html>
+
+
+
+
+

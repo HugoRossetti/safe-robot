@@ -11,13 +11,13 @@
 </head>
 <body>
     <div class="app-container">
-        <h1>Controle do Robô</h1>
+        <h1>MENU DE CONTROLE DO ROBÔ</h1>
         <div class="image-area">
             <img src="Images/Kit-Rob-Explorer-Robocore_1668707968_g (1).png" alt="Imagem do Robô" class="robot-image">
         </div>
         <div class="menu">
-            <button class="btn" onclick="goTo('Modos')">Modos</button>
-            <button class="btn" onclick="goTo('Manual')">Modo Manual</button>
+            <button class="btn" onclick="goTo('Semiautônomo')">Modo Semiautônomo</button>
+            <button class="btn" onclick="goTo('Manual.html')">Modo Manual</button>
             <button class="btn" onclick="goTo('Manutenção')">Manutenção</button>
             <button class="btn-logout" onclick="logout()">Logout</button>
         </div>
@@ -32,7 +32,7 @@
 
         // Função para navegar para outras páginas (modificar conforme necessário)
         function goTo(page) {
-            alert("Indo para a página: " + page);
+            window.location.href = page;
         }
 
         // Função de logout
