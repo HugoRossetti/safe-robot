@@ -130,8 +130,103 @@ h1 {
 
 
 
+/* MENU DE CONTROLE */
 
-/* MENU PRINCIPAL */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #1a1a1a;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.app-container {
+    text-align: center;
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    max-width: 600px;
+    width: 100%;
+}
+
+h1 {
+    color: #ffcc00;
+    margin-bottom: 20px;
+}
+
+.image-area {
+    margin-bottom: 30px;
+}
+
+.robot-image {
+    width: 200px;
+    height: auto;
+    border-radius: 10px;
+}
+
+.menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.btn {
+    background-color: #ffcc00;
+    color: #000;
+    border: none;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-logout {
+    background-color: red;
+    color: #000;
+    border: none;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn:hover {
+    background-color: #e6b800;
+    transform: translateY(-3px);
+}
+
+.btn-logout:hover {
+    background-color: rgb(195, 3, 3);
+    transform: translateY(-3px);
+}
+
+/* Responsividade */
+@media screen and (max-width: 768px) {
+    .app-container {
+        width: 90%;
+    }
+
+    .robot-image {
+        width: 150px;
+    }
+
+    .btn, .btn-logout {
+        padding: 12px;
+        font-size: 16px;
+    }
+}
+
+
+
+
+
+/* MODO MANUAL */
 
 * {
     margin: 0;
