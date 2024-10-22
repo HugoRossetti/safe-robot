@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Manual Control</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    overscroll-behavior: none;
+    user-select: none;
+    touch-action: none;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background-color: #1a1a1a;
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    overflow: hidden;
+}
+
+.info-bar {
+            background-color: black;
+            width: 100%;
+            height: 80px;
+            padding: 10px 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .info-bar .logo {
+            display: inline-block;
+            height: 30px;
+        }
+
+
+.logo {
+    height: 30px;  
+    width: 150px;   
+    object-fit: contain;  
+}
+
+.battery-container {
+    display: flex;
+    align-items: center;
+}
+
+.battery {
+    display: flex;
+    align-items: center;
+    width: 75px;
+    height: 30px;
+    background-color: #555;
+    border-radius: 5px;
+    position: relative;
+    margin-left: 100px; /* Espaçamento entre a bateria e a voltagem */
+}
+
+.battery::after {
+    content: '';
+    width: 10px;
+    height: 15px;
+    background-color: #555;
+    position: absolute;
+    top: 50%;
+    right: -15px;
+    transform: translateY(-50%);
+    border-radius: 2px;
+}
+
+.part {
+    height: 100%;
+    width: 0%;
+    background-color: #0f0;
+    border-radius: 5px;
+    transition: width 0.3s ease-in-out;
+}
+
+.battery-voltage {
+    font-size: 20px;
+    color: #ffcc00;
+    margin-left: 20px;
+}
+
+.graph-container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#speedChart {
+    width: 100%;
+    height: 300px;
+    background-color: #222;
+    border-radius: 10px;
+    border: 3px solid #ffcc00;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+.joystick-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    flex-grow: 1;
+    background-color: #1a1a1a;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: auto;
+}
+
+#joystickCanvas {
+    background-color: #222;
+    border-radius: 10px;
+    border: 3px solid #ffcc00;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    max-width: 100%;
+    height: auto;
+}
+
+/* Media queries para telas menores */
+@media (max-width: 768px) {
+    .info-bar {
+        flex-direction: row;
+        justify-content: space-between; /* Mantém logo e bateria nos cantos */
+        padding: 10px;
+    }
+
+    .logo {
+        height: 25px;
+        width: auto;
+    }
+
+    .battery-container {
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+
+    .battery-voltage {
+        font-size: 16px;
+    }
+
+    .graph-container {
+        padding: 5px;
+    }
+
+    #speedChart {
+        height: 200px;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-bar {
+        flex-direction: row;
+        justify-content: space-between; /* Garante que logo e bateria fiquem lado a lado */
+        padding: 5px;
+    }
+
+    .logo {
+        height: 20px;
+        width: auto;
+    }
+
+    .battery-container {
+        justify-content: flex-end;
+    }
+
+    .battery-voltage {
+        font-size: 14px;
+    }
+
+    #speedChart {
+        height: 150px;
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="info-bar">
+        <div class="battery-container">
+            <img src="Images/LogoS.png" alt="logo Projeto Super" class="logo">
+            <div class="battery">
+                <div id="batteryLevel" class="part"></div>
+            </div>
+            <div class="battery-voltage">
+                <span id="batteryVoltage">0</span> V
+            </div>
+        </div>
+    </div>
+
+    <div class="graph-container">
+        <canvas id="speedChart"></canvas>
+    </div>
+
+    <div class="joystick-container">
+        <canvas id="joystickCanvas"></canvas>
+    </div>
+
+    <script>
+        // Conectar ao WebSocket
+        const ws = new WebSocket(`ws://${window.location.hostname}:3000`);
+
+        ws.onopen = function () {
+            console.log('Conexão WebSocket aberta em ' + window.location.hostname);
+        };
+
+        ws.onerror = function (error) {
+            console.log('Erro WebSocket: ', error);
+        };
+
+        ws.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            console.log('Mensagem recebida via WebSocket:', data);
+
+            // Se os dados contiverem a chave "vbat", é a mensagem de bateria
+            if (data.vbat) {
+                const batteryVoltage = (data.vbat / 1000).toFixed(1);
+                const batteryPercent = Math.min(100, Math.max(2, (data.vbat * 100 / 9000).toFixed(0)));
+
+                document.getElementById('batteryVoltage').innerText = batteryVoltage;
+                document.getElementById('batteryLevel').style.width = batteryPercent + '%';
+
+                // Alterar a cor da barra de bateria
+                if (batteryPercent < 20) {
+                    document.getElementById('batteryLevel').style.backgroundColor = "#F00";
+                } else if (batteryPercent < 70) {
+                    document.getElementById('batteryLevel').style.backgroundColor = "orange";
+                } else {
+                    document.getElementById('batteryLevel').style.backgroundColor = "#0F0";
+                }
+            }
+            if (data.velocidade !== undefined) {
+                atualizarGraficoVelocidade(data.velocidade);
+            }
+        };
+
+        // Função para enviar dados do joystick
+        function sendJoystickData(speed, angle) {
+            const data = {
+                velocidade: speed,
+                angulo: angle
+            };
+            ws.send(JSON.stringify(data));
+        }
+
+        // Lógica do Joystick
+        let canvasJoystick, ctxJoystick, drawing = false, origin = { x: 0, y: 0 }, radius = 0, speed = 0, angle = 0;
+
+        window.onload = function () {
+            canvasJoystick = document.getElementById('joystickCanvas');
+            ctxJoystick = canvasJoystick.getContext('2d');
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            canvasJoystick.addEventListener('mousedown', startDrawing);
+            canvasJoystick.addEventListener('mousemove', drawJoystick);
+            canvasJoystick.addEventListener('mouseup', stopDrawing);
+            canvasJoystick.addEventListener('touchstart', startDrawing, { passive: false });
+            canvasJoystick.addEventListener('touchmove', drawJoystick, { passive: false });
+            canvasJoystick.addEventListener('touchend', stopDrawing, { passive: false });
+
+            // Inicializar o gráfico após a página carregar
+            inicializarGraficoVelocidade();
+        };
+
+        function resizeCanvas() {
+            canvasJoystick.width = 400;
+            canvasJoystick.height = 400;
+            origin.x = canvasJoystick.width / 2;
+            origin.y = canvasJoystick.height / 2;
+            radius = Math.min(canvasJoystick.width, canvasJoystick.height) * 0.3;
+            drawJoystickBase();
+        }
+
+        function drawJoystickBase() {
+            ctxJoystick.clearRect(0, 0, canvasJoystick.width, canvasJoystick.height);
+            ctxJoystick.beginPath();
+            ctxJoystick.arc(origin.x, origin.y, radius, 0, Math.PI * 2, true);
+            ctxJoystick.fillStyle = '#555';
+            ctxJoystick.fill();
+        }
+
+        function startDrawing(e) {
+            e.preventDefault(); // Impedir a rolagem
+            drawing = true;
+            drawJoystick(e);
+        }
+
+        function drawJoystick(e) {
+            if (!drawing) return;
+            const rect = canvasJoystick.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const x = clientX - rect.left;
+            const y = clientY - rect.top;
+
+            ctxJoystick.clearRect(0, 0, canvasJoystick.width, canvasJoystick.height);
+            drawJoystickBase();
+
+            const dx = x - origin.x;
+            const dy = y - origin.y;
+            const distance = Math.min(Math.sqrt(dx * dx + dy * dy), radius);
+            const angleRad = Math.atan2(dy, dx);
+            speed = Math.round((distance / radius) * 100);
+            angle = Math.round((angleRad * 180) / Math.PI);
+
+            ctxJoystick.beginPath();
+            ctxJoystick.arc(origin.x + distance * Math.cos(angleRad), origin.y + distance * Math.sin(angleRad), 50, 0, Math.PI * 2);
+            ctxJoystick.fillStyle = '#ffcc00';
+            ctxJoystick.fill();
+
+            sendJoystickData(speed, angle);
+        }
+
+        function stopDrawing(e) {
+            drawing = false;
+            ctxJoystick.clearRect(0, 0, canvasJoystick.width, canvasJoystick.height);
+            drawJoystickBase();
+
+        // Desenhar a bolinha de volta ao centro quando o usuário soltar
+            ctxJoystick.beginPath();
+            ctxJoystick.arc(origin.x, origin.y, 50, 0, Math.PI * 2); // Bolinha de volta ao centro
+            ctxJoystick.fillStyle = '#ffcc00';
+            ctxJoystick.fill();
+
+            sendJoystickData(0, 0); // Velocidade e ângulo zero quando o joystick é solto
+        }
+
+
+// Gráfico de Velocidade
+let chartVelocidade;
+let ultimaAtualizacao = 0; // Variável para controlar a frequência de atualizações
+
+function inicializarGraficoVelocidade() {
+    const ctx = document.getElementById('speedChart').getContext('2d');
+    chartVelocidade = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: [],  // Labels vazias para começar
+            datasets: [{
+                label: 'Velocidade',
+                data: [],
+                borderColor: 'rgba(255, 204, 0, 1)',
+                backgroundColor: 'rgba(255, 204, 0, 0.2)',
+                fill: true,
+                lineTension: 0.5  // Aumentando a suavidade da curva
+            }]
+        },
+        options: {
+            responsive: true,
+            animation: {
+                duration: 500  // Aumentar a duração da animação para suavizar transições
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'second',
+                        displayFormats: {
+                            second: 'mm:ss'  // Formato do tempo em minutos e segundos
+                        }
+                    },
+                    ticks: {
+                        source: 'auto'
+                    },
+                    title: {
+                        display: true,
+                        text: 'Tempo (últimos 5 segundos)'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: 100,  // Limite máximo do eixo Y para velocidade
+                    title: {
+                        display: true,
+                        text: 'Velocidade (%)'
+                    }
+                }
+            }
+        }
+    });
+}
+
+function atualizarGraficoVelocidade(novaVelocidade) {
+    const agora = new Date();
+    
+    // Verifica se a última atualização foi há mais de 200ms (5 atualizações por segundo)
+    if (agora - ultimaAtualizacao > 200) {
+        ultimaAtualizacao = agora;
+        
+        // Invertendo o valor da velocidade antes de adicionar ao gráfico
+        const velocidadeCorrigida = 100 - novaVelocidade;
+
+        chartVelocidade.data.labels.push(agora);
+        chartVelocidade.data.datasets[0].data.push(velocidadeCorrigida);
+
+        // Manter apenas os últimos 50 pontos (aproximadamente 10 segundos com uma taxa de atualização moderada)
+        if (chartVelocidade.data.labels.length > 50) {
+            chartVelocidade.data.labels.shift();
+            chartVelocidade.data.datasets[0].data.shift();
+        }
+
+        // Atualizar o gráfico para refletir as mudanças
+        chartVelocidade.update();
+    }
+}
+
+
+    </script>
+</body>
+</html>

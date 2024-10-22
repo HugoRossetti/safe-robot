@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Login - Projeto Robô</title>
+    <script>
+        // Verificar se o usuário já está autenticado
+        if (sessionStorage.getItem('isAuthenticated') === 'true') {
+            // Redirecionar para a página de controle
+            window.location.href = 'menu.html';
+        }
+    </script>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-box" role="main" aria-labelledby="login-heading">
+            <h1 id="login-heading">Bem-vindo</h1>
+            <form id="loginForm" novalidate>
+                <div class="input-group">
+                    <input type="text" id="username" name="username" required placeholder="Usuário" aria-required="true" autocomplete="username">
+                </div>
+                <div class="input-group password-group">
+                    <input type="password" id="password" name="password" required placeholder="Senha" aria-required="true" autocomplete="current-password">
+                </div>
+                <div class="checkbox-group">
+                    <label for="showPassword" class="minimal-checkbox-label">
+                        <input type="checkbox" id="showPassword" class="minimal-checkbox">
+                        Mostrar senha
+                    </label>
+                </div>
+                <button type="submit" class="login-btn">Entrar</button>
+                <p id="error-message" style="color: red; display: none; text-align: center; margin-top: 10px;"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const validUsername = 'ProjetoSuper';
+        const validPassword = 'Super123';
+
+        // Mostrar/ocultar senha
+        document.getElementById('showPassword').addEventListener('change', function () {
+            const passwordField = document.getElementById('password');
+            passwordField.type = this.checked ? 'text' : 'password';
+        });
+
+        // Validação de login
+        document.getElementById('loginForm').addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorMessage = document.getElementById('error-message');
+
+            if (username === validUsername && password === validPassword) {
+                // Armazenar a chave de sessão no sessionStorage
+                sessionStorage.setItem('isAuthenticated', 'true');
+                // Redirecionar para a página de controle
+                window.location.href = 'menu.html';
+            } else {
+                errorMessage.textContent = 'Usuário ou senha incorretos.';
+                errorMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

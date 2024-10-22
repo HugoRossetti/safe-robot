@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Controle do Robô</title>
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+</head>
+<body>
+    <div class="app-container">
+        <h1>MENU DE CONTROLE DO ROBÔ</h1>
+        <div class="image-area">
+            <img src="Images/Robot.png" alt="Imagem do Robô" class="robot-image">
+        </div>
+        <div class="menu">
+            <button class="btn" onclick="goTo('Semiautônomo')">Modo Semiautônomo</button>
+            <button class="btn" onclick="goTo('manual.html')">Modo Manual</button>
+            <button class="btn" onclick="goTo('Manutenção')">Manutenção</button>
+            <button class="btn-logout" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        // Verifica se o usuário está autenticado
+        if (sessionStorage.getItem('isAuthenticated') !== 'true') {
+            // Se não estiver autenticado, redireciona para a página de login
+            window.location.href = 'index.html';
+        }
+
+        // Função para navegar para outras páginas (modificar conforme necessário)
+        function goTo(page) {
+            window.location.href = page;
+        }
+
+        // Função de logout
+        function logout() {
+            // Remove a autenticação da sessão
+            sessionStorage.removeItem('isAuthenticated');
+            // Redirecionar para a página de login
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
