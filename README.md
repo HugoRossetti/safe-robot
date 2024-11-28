@@ -1,4 +1,4 @@
-# Sistema de Remediação de Cyberataques em Robôs Industriais com MQTT
+# Safebot: Robô Móvel Resiliente a Ataques Cibernéticos
 
 ## Sumário
 
